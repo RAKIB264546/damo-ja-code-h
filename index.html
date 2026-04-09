@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Code Cloud</title>
+    <title>Advanced Code Storage</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #0d1117;
@@ -14,143 +13,35 @@
             --accent: #238636;
             --border: #30363d;
             --text: #c9d1d9;
+            --terminal-text: #39ff14;
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
+        
+        nav { background: var(--card); padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: center; gap: 15px; position: sticky; top: 0; z-index: 1000; }
+        .tab-btn { background: #21262d; border: 1px solid var(--border); color: var(--text); padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Navbar */
-        nav {
-            background: var(--card);
-            padding: 15px;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .tab-btn {
-            background: #21262d;
-            color: var(--text);
-            border: 1px solid var(--border);
-            padding: 10px 25px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.3s;
-        }
-
-        .tab-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 30px auto;
-            width: 95%;
-        }
-
+        .container { max-width: 850px; margin: 30px auto; padding: 0 15px; }
         .section { display: none; }
-        .section.active { display: block; }
+        .section.active { display: block; animation: fadeIn 0.3s ease-in; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* Admin UI */
-        .admin-box {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 20px;
-        }
+        .admin-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 25px; }
+        input[type="text"] { width: 100%; padding: 12px; background: #010409; border: 1px solid var(--border); color: var(--primary); border-radius: 6px; margin-bottom: 15px; box-sizing: border-box; }
+        textarea { width: 100%; height: 250px; background: #010409; color: #79c0ff; border: 1px solid var(--border); border-radius: 6px; padding: 15px; font-family: 'Courier New', monospace; box-sizing: border-box; resize: vertical; }
+        .run-btn { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; font-size: 16px; }
+        
+        .terminal { background: black; color: var(--terminal-text); padding: 15px; border-radius: 6px; margin-top: 20px; font-family: monospace; font-size: 14px; border-left: 4px solid var(--accent); min-height: 60px; }
 
-        textarea {
-            width: 100%;
-            height: 250px;
-            background: #010409;
-            color: #79c0ff;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 15px;
-            font-family: 'Fira Code', monospace;
-            box-sizing: border-box;
-            resize: vertical;
-        }
-
-        .run-btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 15px;
-            font-weight: bold;
-            width: 100%;
-        }
-
-        .terminal {
-            background: black;
-            color: #39ff14;
-            padding: 15px;
-            border-radius: 6px;
-            margin-top: 20px;
-            font-family: 'Fira Code', monospace;
-            font-size: 13px;
-            border-left: 3px solid var(--accent);
-            min-height: 50px;
-        }
-
-        /* User UI - Code Block Style */
-        .code-snippet-box {
-            background: #0d1117;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            margin-bottom: 25px;
-            position: relative;
-        }
-
-        .code-header {
-            background: #161b22;
-            padding: 8px 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            font-size: 12px;
-            color: #8b949e;
-        }
-
-        .copy-btn {
-            background: #21262d;
-            border: 1px solid var(--border);
-            color: #c9d1d9;
-            padding: 4px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
+        /* User UI - Code Box */
+        .code-card { background: #0d1117; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 25px; overflow: hidden; }
+        .code-header { background: #161b22; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .copy-btn { background: #21262d; border: 1px solid var(--border); color: var(--text); padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
         .copy-btn:hover { background: #30363d; }
-
-        pre {
-            margin: 0;
-            padding: 15px;
-            overflow-x: auto;
-            color: #e6edf3;
-            font-family: 'Fira Code', monospace;
-            font-size: 14px;
-            line-height: 1.5;
-        }
+        pre { margin: 0; padding: 20px; overflow-x: auto; color: #e6edf3; font-size: 14px; line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -163,32 +54,32 @@
 <div class="container">
     
     <div id="admin" class="section active">
-        <div class="admin-box">
-            <h3 style="margin-top:0">Upload Code to Cloud</h3>
-            <textarea id="codeInput" placeholder="// এখানে আপনার কোড পেস্ট করুন..."></textarea>
-            <button class="run-btn" onclick="uploadProcess()">Run & Upload</button>
-            
-            <div id="terminal" class="terminal">> System idle...</div>
+        <div class="admin-panel">
+            <h2 style="margin-top:0">Upload New Code</h2>
+            <input type="text" id="titleInput" placeholder="কোডের নাম (Title)...">
+            <textarea id="codeInput" placeholder="// এখানে আপনার কোডিং পেস্ট করুন..."></textarea>
+            <button class="run-btn" onclick="processUpload()">RUN & UPLOAD</button>
+            <div id="terminal" class="terminal">> System ready. Waiting for input...</div>
         </div>
     </div>
 
     <div id="user" class="section">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h3 style="margin:0">Available Codes</h3>
-            <button onclick="fetchCodes()" style="background:none; border:1px solid var(--primary); color:var(--primary); cursor:pointer; padding:5px 10px; border-radius:4px;">Refresh</button>
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin:0">Cloud Snippets</h2>
+            <button onclick="fetchData()" style="background:transparent; color:var(--primary); border:1px solid var(--primary); padding:5px 15px; border-radius:4px; cursor:pointer;">Refresh</button>
         </div>
-        <div id="codeListArea">
-            <p style="color: #8b949e;">কোড লোড হচ্ছে...</p>
+        <div id="codeDisplayArea">
+            <p style="text-align:center; color: #8b949e;">কোড লোড হচ্ছে...</p>
         </div>
     </div>
 
 </div>
 
 <script>
-    // Supabase Setup
-    const SUPABASE_URL = "https://clrwzlcxjfsnruakwlev.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNscnd6bGN4amZzbnJ1YWt3bGV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1Mzg3MjYsImV4cCI6MjA5MTExNDcyNn0.5qTNtLyT3LM3UE7_hrtj-bjXBiRqksVrmmB0NZrwo48";
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Supabase Configuration
+    const SB_URL = "https://soduyfwldglavqfbvbod.supabase.co";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvZHV5ZndsZGdsYXZxZmJ2Ym9kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MzExNjQsImV4cCI6MjA5MTMwNzE2NH0.-5zO6e8J3KUPg4nulXaH_XPH1pyckdCAkb2VgfXusn0";
+    const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
     // Tab Logic
     function showTab(tabId) {
@@ -196,76 +87,69 @@
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
         event.currentTarget.classList.add('active');
-        if(tabId === 'user') fetchCodes();
+        if(tabId === 'user') fetchData();
     }
 
-    // Admin Upload Process
-    async function uploadProcess() {
+    // Terminal Logic & Upload
+    async function processUpload() {
+        const title = document.getElementById('titleInput').value;
         const code = document.getElementById('codeInput').value;
-        const term = document.getElementById('terminal');
+        const terminal = document.getElementById('terminal');
 
-        if(!code.trim()) {
-            term.innerHTML = "<span style='color:red'>> Error: কোড বক্স খালি!</span>";
+        if (!title || !code) {
+            terminal.innerHTML = "<span style='color:red'>> Error: টাইটেল এবং কোড দুটোই প্রয়োজন!</span>";
             return;
         }
 
-        // Terminal Animation
-        term.innerHTML = "> Initializing connection...";
+        terminal.innerHTML = "> Connecting to server...";
         
         setTimeout(async () => {
-            term.innerHTML += "<br>> Authenticating with Supabase...";
+            terminal.innerHTML += "<br>> Processing code blocks...";
             
-            // আপনার বটের 'users' টেবিল ব্যবহার করে ডেটা ইনসার্ট করা হচ্ছে।
-            // দ্রষ্টব্য: এখানে আমরা 'user_id' হিসেবে একটা র‍্যান্ডম আইডি দিচ্ছি 
-            // এবং 'balance' কলামে কোড সেভ করছি (যেহেতু আপনি নতুন টেবিল করবেন না)।
             const { error } = await _supabase
-                .from('users') 
-                .insert([{ user_id: Date.now(), balance: 0, total_numbers: 0, referral_count: 0, total_ref_earnings: 0, content: code }]); 
-                // নোট: আপনার টেবিলে 'content' নামে একটি কলাম থাকলে সেটি ইউজ হবে। 
-                // যদি কলাম না থাকে তবে আপনাকে Supabase এ গিয়ে Table Editor থেকে একটি 'content' কলাম (Text Type) যোগ করতে হবে।
+                .from('all_codes')
+                .insert([{ title: title, code_content: code }]);
 
-            setTimeout(() => {
-                if(error) {
-                    term.innerHTML += `<br><span style='color:red'>> Upload Failed: ${error.message}</span>`;
-                } else {
-                    term.innerHTML += "<br>> Syncing with server...";
-                    setTimeout(() => {
-                        term.innerHTML += "<br>> <span style='color:#39ff14'>SUCCESSFULLY CODE UPLOADED!</span>";
-                        document.getElementById('codeInput').value = "";
-                    }, 800);
-                }
-            }, 1000);
-        }, 800);
+            if (error) {
+                terminal.innerHTML += `<br><span style='color:red'>> Failed: ${error.message}</span>`;
+            } else {
+                terminal.innerHTML += "<br>> Uploading to Supabase Cloud...";
+                setTimeout(() => {
+                    terminal.innerHTML += "<br>> <span style='color:#39ff14'>SUCCESSFULLY CODE UPLOADED!</span>";
+                    document.getElementById('titleInput').value = "";
+                    document.getElementById('codeInput').value = "";
+                }, 800);
+            }
+        }, 1000);
     }
 
-    // User Fetch Logic
-    async function fetchCodes() {
-        const listArea = document.getElementById('codeListArea');
-        listArea.innerHTML = "Fetching snippets...";
+    // Fetch and Display Logic
+    async function fetchData() {
+        const area = document.getElementById('codeDisplayArea');
+        area.innerHTML = "Fetching data from cloud...";
 
         const { data, error } = await _supabase
-            .from('users')
+            .from('all_codes')
             .select('*')
-            .not('content', 'is', null) // শুধুমাত্র যাদের কন্টেন্ট আছে তাদের দেখাবে
             .order('id', { ascending: false });
 
-        if(error || !data) {
-            listArea.innerHTML = "No codes found or Table error.";
+        if (error || !data) {
+            area.innerHTML = "No data found.";
             return;
         }
 
-        listArea.innerHTML = "";
+        area.innerHTML = "";
         data.forEach((item, index) => {
-            const box = document.createElement('div');
-            box.className = 'code-snippet-box';
-            box.innerHTML = `
+            const card = document.createElement('div');
+            card.className = 'code-card';
+            card.innerHTML = `
                 <div class="code-header">
-                    <span>Snippet #${item.id}</span>
-                    <button class="copy-btn" onclick="copyCode(this, 'code-${index}')">Copy</button>
+                    <strong>${item.title}</strong>
+                    <button class="copy-btn" onclick="copyCode(this, 'code-${index}')">Copy Code</button>
                 </div>
-                <pre><code id="code-${index}">${escapeHTML(item.content)}</code></pre>
+                <pre><code id="code-${index}">${escapeHTML(item.code_content)}</code></pre>
             `;
-            listArea.appendChild(box);
+            area.appendChild(card);
         });
     }
 
@@ -273,13 +157,8 @@
     function copyCode(btn, id) {
         const text = document.getElementById(id).innerText;
         navigator.clipboard.writeText(text).then(() => {
-            const originalText = btn.innerText;
             btn.innerText = "Copied!";
-            btn.style.color = "#39ff14";
-            setTimeout(() => {
-                btn.innerText = originalText;
-                btn.style.color = "#c9d1d9";
-            }, 2000);
+            setTimeout(() => btn.innerText = "Copy Code", 2000);
         });
     }
 
