@@ -3,208 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Panel - Cloud Sync</title>
+    <title>Advanced Code Cloud</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6366f1;
-            --accent: #10b981;
-            --bg-dark: #0b0e14;
-            --card-bg: #161b22;
-            --text-gray: #8b949e;
-            --terminal-bg: #010409;
+            --bg: #0d1117;
+            --card: #161b22;
+            --primary: #58a6ff;
+            --accent: #238636;
+            --border: #30363d;
+            --text: #c9d1d9;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
-            color: #c9d1d9;
+            background-color: var(--bg);
+            color: var(--text);
             margin: 0;
-            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
-        /* Navbar & Tabs */
+        /* Navbar */
         nav {
-            background: rgba(22, 27, 34, 0.8);
-            backdrop-filter: blur(12px);
-            padding: 1rem;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid #30363d;
+            background: var(--card);
+            padding: 15px;
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .tab-btn {
-            background: transparent;
-            border: 1px solid #30363d;
-            color: var(--text-gray);
-            padding: 8px 20px;
+            background: #21262d;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 10px 25px;
             border-radius: 6px;
             cursor: pointer;
-            transition: all 0.3s;
             font-weight: 600;
+            transition: 0.3s;
         }
 
         .tab-btn.active {
             background: var(--primary);
             color: white;
             border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
         }
 
-        /* Container */
         .container {
-            max-width: 1000px;
-            margin: 40px auto;
-            padding: 0 20px;
+            max-width: 900px;
+            margin: 30px auto;
+            width: 95%;
         }
 
         .section { display: none; }
-        .section.active { display: block; animation: slideUp 0.4s ease-out; }
+        .section.active { display: block; }
 
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Admin UI - Terminal Style */
-        .admin-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid #30363d;
-            overflow: hidden;
+        /* Admin UI */
+        .admin-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
         }
 
-        .card-header {
-            background: #21262d;
-            padding: 15px 20px;
-            border-bottom: 1px solid #30363d;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
-
-        .form-group { padding: 20px; }
-        
-        input, textarea {
+        textarea {
             width: 100%;
-            background: var(--terminal-bg);
-            border: 1px solid #30363d;
-            color: #58a6ff;
-            padding: 12px;
+            height: 250px;
+            background: #010409;
+            color: #79c0ff;
+            border: 1px solid var(--border);
             border-radius: 6px;
-            margin-bottom: 15px;
+            padding: 15px;
             font-family: 'Fira Code', monospace;
             box-sizing: border-box;
+            resize: vertical;
         }
 
         .run-btn {
             background: var(--accent);
-            color: #0b0e14;
+            color: white;
             border: none;
-            padding: 12px 25px;
+            padding: 12px 30px;
             border-radius: 6px;
             cursor: pointer;
+            margin-top: 15px;
             font-weight: bold;
             width: 100%;
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
-        .terminal-box {
+        .terminal {
             background: black;
-            color: #00ff00;
+            color: #39ff14;
             padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
             font-family: 'Fira Code', monospace;
             font-size: 13px;
-            border-top: 1px solid #30363d;
-            min-height: 80px;
+            border-left: 3px solid var(--accent);
+            min-height: 50px;
         }
 
-        /* User UI - Card Style */
-        .user-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .user-card {
-            background: var(--card-bg);
-            border: 1px solid #30363d;
-            border-radius: 10px;
-            padding: 20px;
+        /* User UI - Code Block Style */
+        .code-snippet-box {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-bottom: 25px;
             position: relative;
-            transition: 0.3s;
         }
 
-        .user-card:hover { border-color: var(--primary); transform: translateY(-5px); }
-
-        .user-id { color: var(--primary); font-size: 0.8rem; margin-bottom: 10px; }
-        .balance-tag { font-size: 1.5rem; font-weight: bold; color: white; margin: 10px 0; }
+        .code-header {
+            background: #161b22;
+            padding: 8px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            color: #8b949e;
+        }
 
         .copy-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
             background: #21262d;
-            border: 1px solid #30363d;
-            color: white;
-            padding: 5px 10px;
+            border: 1px solid var(--border);
+            color: #c9d1d9;
+            padding: 4px 10px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 11px;
+            transition: 0.2s;
         }
 
-        .copy-btn:active { background: var(--primary); }
+        .copy-btn:hover { background: #30363d; }
 
+        pre {
+            margin: 0;
+            padding: 15px;
+            overflow-x: auto;
+            color: #e6edf3;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
 
 <nav>
     <button class="tab-btn active" onclick="showTab('admin')">Admin Panel</button>
-    <button class="tab-btn" onclick="showTab('user')" id="btn-fetch">User List & Balance</button>
+    <button class="tab-btn" onclick="showTab('user')">User View</button>
 </nav>
 
 <div class="container">
     
     <div id="admin" class="section active">
-        <div class="admin-card">
-            <div class="card-header"><div class="status-dot"></div> System Controller</div>
-            <div class="form-group">
-                <label>Target User ID (Telegram UID)</label>
-                <input type="text" id="targetUid" placeholder="e.g. 12345678">
-                
-                <label>Add/Subtract Balance (BDT)</label>
-                <input type="number" id="balanceAmount" placeholder="e.g. 50.00">
-                
-                <button class="run-btn" onclick="updateBalance()">Execute Upload</button>
-            </div>
-            <div class="terminal-box" id="terminal">
-                > Initializing system...<br>
-                > Database: Supabase Connected.<br>
-                > Ready for commands.
-            </div>
+        <div class="admin-box">
+            <h3 style="margin-top:0">Upload Code to Cloud</h3>
+            <textarea id="codeInput" placeholder="// এখানে আপনার কোড পেস্ট করুন..."></textarea>
+            <button class="run-btn" onclick="uploadProcess()">Run & Upload</button>
+            
+            <div id="terminal" class="terminal">> System idle...</div>
         </div>
     </div>
 
     <div id="user" class="section">
-        <div style="display:flex; justify-content: space-between; margin-bottom: 20px;">
-            <h2 style="margin:0">Active Users Data</h2>
-            <button onclick="fetchUsers()" style="background:none; border: 1px solid var(--primary); color: var(--primary); cursor:pointer; border-radius:5px; padding: 5px 15px;">Refresh</button>
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin:0">Available Codes</h3>
+            <button onclick="fetchCodes()" style="background:none; border:1px solid var(--primary); color:var(--primary); cursor:pointer; padding:5px 10px; border-radius:4px;">Refresh</button>
         </div>
-        <div class="user-grid" id="userDisplay">
-            </div>
+        <div id="codeListArea">
+            <p style="color: #8b949e;">কোড লোড হচ্ছে...</p>
+        </div>
     </div>
 
 </div>
 
 <script>
-    // Supabase Configuration from your Bot
+    // Supabase Setup
     const SUPABASE_URL = "https://clrwzlcxjfsnruakwlev.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNscnd6bGN4amZzbnJ1YWt3bGV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1Mzg3MjYsImV4cCI6MjA5MTExNDcyNn0.5qTNtLyT3LM3UE7_hrtj-bjXBiRqksVrmmB0NZrwo48";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -215,94 +196,97 @@
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
         event.currentTarget.classList.add('active');
-        if(tabId === 'user') fetchUsers();
+        if(tabId === 'user') fetchCodes();
     }
 
-    // Terminal Logger
-    function log(msg, type = "success") {
+    // Admin Upload Process
+    async function uploadProcess() {
+        const code = document.getElementById('codeInput').value;
         const term = document.getElementById('terminal');
-        const color = type === "error" ? "#ff4444" : "#00ff00";
-        term.innerHTML += `<br><span style="color:${color}">> ${msg}</span>`;
-        term.scrollTop = term.scrollHeight;
-    }
 
-    // Admin Function: Update User Balance in 'users' table
-    async function updateBalance() {
-        const uid = document.getElementById('targetUid').value;
-        const amount = parseFloat(document.getElementById('balanceAmount').value);
-        
-        if(!uid || isNaN(amount)) {
-            log("Error: Invalid ID or Amount", "error");
+        if(!code.trim()) {
+            term.innerHTML = "<span style='color:red'>> Error: কোড বক্স খালি!</span>";
             return;
         }
 
-        log(`Fetching user ${uid}...`);
+        // Terminal Animation
+        term.innerHTML = "> Initializing connection...";
         
-        // First get current balance
-        const { data: user, error: fetchError } = await _supabase
-            .from('users')
-            .select('balance')
-            .eq('user_id', uid)
-            .single();
+        setTimeout(async () => {
+            term.innerHTML += "<br>> Authenticating with Supabase...";
+            
+            // আপনার বটের 'users' টেবিল ব্যবহার করে ডেটা ইনসার্ট করা হচ্ছে।
+            // দ্রষ্টব্য: এখানে আমরা 'user_id' হিসেবে একটা র‍্যান্ডম আইডি দিচ্ছি 
+            // এবং 'balance' কলামে কোড সেভ করছি (যেহেতু আপনি নতুন টেবিল করবেন না)।
+            const { error } = await _supabase
+                .from('users') 
+                .insert([{ user_id: Date.now(), balance: 0, total_numbers: 0, referral_count: 0, total_ref_earnings: 0, content: code }]); 
+                // নোট: আপনার টেবিলে 'content' নামে একটি কলাম থাকলে সেটি ইউজ হবে। 
+                // যদি কলাম না থাকে তবে আপনাকে Supabase এ গিয়ে Table Editor থেকে একটি 'content' কলাম (Text Type) যোগ করতে হবে।
 
-        if (fetchError) {
-            log("Error: User not found in database", "error");
-            return;
-        }
-
-        const newBal = (parseFloat(user.balance) + amount).toFixed(2);
-        
-        log(`Updating balance to ${newBal} BDT...`);
-
-        const { error: updateError } = await _supabase
-            .from('users')
-            .update({ balance: newBal })
-            .eq('user_id', uid);
-
-        if (updateError) {
-            log("Error: Update failed", "error");
-        } else {
-            log(`Success: Successfully Code Uploaded and Balance Updated!`, "success");
-            document.getElementById('targetUid').value = "";
-            document.getElementById('balanceAmount').value = "";
-        }
+            setTimeout(() => {
+                if(error) {
+                    term.innerHTML += `<br><span style='color:red'>> Upload Failed: ${error.message}</span>`;
+                } else {
+                    term.innerHTML += "<br>> Syncing with server...";
+                    setTimeout(() => {
+                        term.innerHTML += "<br>> <span style='color:#39ff14'>SUCCESSFULLY CODE UPLOADED!</span>";
+                        document.getElementById('codeInput').value = "";
+                    }, 800);
+                }
+            }, 1000);
+        }, 800);
     }
 
-    // User Function: Fetch all users from 'users' table
-    async function fetchUsers() {
-        const display = document.getElementById('userDisplay');
-        display.innerHTML = "<p>Loading data from cloud...</p>";
+    // User Fetch Logic
+    async function fetchCodes() {
+        const listArea = document.getElementById('codeListArea');
+        listArea.innerHTML = "Fetching snippets...";
 
         const { data, error } = await _supabase
             .from('users')
-            .select('*');
+            .select('*')
+            .not('content', 'is', null) // শুধুমাত্র যাদের কন্টেন্ট আছে তাদের দেখাবে
+            .order('id', { ascending: false });
 
-        if (error) {
-            display.innerHTML = "<p>Error fetching data.</p>";
+        if(error || !data) {
+            listArea.innerHTML = "No codes found or Table error.";
             return;
         }
 
-        display.innerHTML = "";
-        data.forEach(u => {
-            const card = document.createElement('div');
-            card.className = 'user-card';
-            card.innerHTML = `
-                <div class="user-id">UID: ${u.user_id}</div>
-                <button class="copy-btn" onclick="copyId('${u.user_id}', this)">Copy ID</button>
-                <div class="balance-tag">${u.balance} <small>BDT</small></div>
-                <div style="font-size:0.8rem; color:var(--text-gray)">
-                    Numbers: ${u.total_numbers || 0} | Refs: ${u.referral_count || 0}
+        listArea.innerHTML = "";
+        data.forEach((item, index) => {
+            const box = document.createElement('div');
+            box.className = 'code-snippet-box';
+            box.innerHTML = `
+                <div class="code-header">
+                    <span>Snippet #${item.id}</span>
+                    <button class="copy-btn" onclick="copyCode(this, 'code-${index}')">Copy</button>
                 </div>
+                <pre><code id="code-${index}">${escapeHTML(item.content)}</code></pre>
             `;
-            display.appendChild(card);
+            listArea.appendChild(box);
         });
     }
 
-    function copyId(id, btn) {
-        navigator.clipboard.writeText(id).then(() => {
+    // Copy Function
+    function copyCode(btn, id) {
+        const text = document.getElementById(id).innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            const originalText = btn.innerText;
             btn.innerText = "Copied!";
-            setTimeout(() => btn.innerText = "Copy ID", 2000);
+            btn.style.color = "#39ff14";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.color = "#c9d1d9";
+            }, 2000);
         });
+    }
+
+    function escapeHTML(str) {
+        return str.replace(/[&<>"']/g, m => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+        }[m]));
     }
 </script>
 
