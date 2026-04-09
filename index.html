@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Hosting System</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #333; text-align: center; }
+        
+        /* Tab Styling */
+        .tabs { display: flex; justify-content: center; margin-bottom: 20px; }
+        .tab-btn { padding: 10px 20px; cursor: pointer; border: none; background: #ddd; margin: 0 5px; border-radius: 5px; font-weight: bold; }
+        .tab-btn.active { background: #007bff; color: white; }
+
+        /* Section Styling */
+        .section { display: none; }
+        .section.active { display: block; }
+
+        /* Admin Styles */
+        textarea { width: 100%; height: 200px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-family: monospace; resize: vertical; }
+        .btn-run { display: block; width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; font-size: 16px; }
+        .terminal { background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 5px; margin-top: 15px; font-family: 'Courier New', Courier, monospace; min-height: 40px; }
+
+        /* User/Code Box Styles */
+        .code-container { position: relative; background: #2d2d2d; border-radius: 8px; padding: 15px; margin-top: 20px; color: #f8f8f2; overflow-x: auto; }
+        .copy-btn { position: absolute; top: 10px; right: 10px; background: #44475a; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .copy-btn:hover { background: #6272a4; }
+        pre { margin: 0; white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Code Manager System</h2>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('admin')">Admin Panel</button>
+        <button class="tab-btn" onclick="showTab('user')">User View</button>
+    </div>
+
+    <div id="admin" class="section active">
+        <h3>অ্যাডমিন প্যানেল</h3>
+        <textarea id="codeInput" placeholder="এখানে আপনার কোড পেস্ট করুন..."></textarea>
+        <button class="btn-run" onclick="runCode()">Run / Upload Code</button>
+        <div class="terminal" id="terminal">টার্মিনাল: অপেক্ষায় আছে...</div>
+    </div>
+
+    <div id="user" class="section">
+        <h3>ইউজার ভিউ</h3>
+        <div id="codeDisplayArea">
+            <p style="color: #666;">এখনো কোনো কোড আপলোড করা হয়নি।</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Tab switching logic
+    function showTab(tabId) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    // Admin Run Logic
+    function runCode() {
+        const code = document.getElementById('codeInput').value;
+        const terminal = document.getElementById('terminal');
+
+        if (code.trim() === "") {
+            terminal.innerHTML = "> Error: কোড বক্স খালি!";
+            terminal.style.color = "#ff4444";
+            return;
+        }
+
+        // Terminal animation
+        terminal.innerHTML = "> Processing...";
+        terminal.style.color = "#00ff00";
+
+        setTimeout(() => {
+            terminal.innerHTML = "> Uploading to Server...";
+            setTimeout(() => {
+                terminal.innerHTML = "> Success: কোড সফলভাবে আপলোড হয়েছে!";
+                updateUserView(code);
+            }, 1000);
+        }, 800);
+    }
+
+    // Update User View with Copy Button
+    function updateUserView(code) {
+        const displayArea = document.getElementById('codeDisplayArea');
+        
+        const codeHtml = `
+            <div class="code-container">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre><code>${escapeHTML(code)}</code></pre>
+            </div>
+        `;
+        displayArea.innerHTML = codeHtml;
+    }
+
+    // Copy Functionality
+    function copyCode(btn) {
+        const codeText = btn.nextElementSibling.innerText;
+        navigator.clipboard.writeText(codeText).then(() => {
+            btn.innerText = "Copied!";
+            btn.style.background = "#28a745";
+            setTimeout(() => {
+                btn.innerText = "Copy";
+                btn.style.background = "#44475a";
+            }, 2000);
+        });
+    }
+
+    // Helper to prevent HTML injection
+    function escapeHTML(str) {
+        return str.replace(/[&<>"']/g, function(m) {
+            return {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            }[m];
+        });
+    }
+</script>
+
+</body>
+</html>
