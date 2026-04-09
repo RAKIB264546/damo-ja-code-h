@@ -3,169 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Code Storage</title>
+    <title>Cloud File Manager</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --bg: #0d1117;
-            --card: #161b22;
-            --primary: #58a6ff;
-            --accent: #238636;
-            --border: #30363d;
-            --text: #c9d1d9;
-            --terminal-text: #39ff14;
-        }
-
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
+        :root { --bg: #0d1117; --card: #161b22; --primary: #58a6ff; --accent: #238636; --border: #30363d; --text: #c9d1d9; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; }
+        nav { background: var(--card); padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: center; gap: 10px; }
+        .tab-btn { background: #21262d; border: 1px solid var(--border); color: var(--text); padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .tab-btn.active { background: var(--primary); color: white; }
+        .container { max-width: 800px; margin: 30px auto; padding: 20px; }
+        .section { display: none; background: var(--card); padding: 25px; border-radius: 10px; border: 1px solid var(--border); }
+        .section.active { display: block; }
         
-        nav { background: var(--card); padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: center; gap: 15px; position: sticky; top: 0; z-index: 1000; }
-        .tab-btn { background: #21262d; border: 1px solid var(--border); color: var(--text); padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        input[type="file"] { width: 100%; padding: 10px; background: #010409; border: 1px dashed var(--border); border-radius: 6px; margin-bottom: 15px; }
+        .run-btn { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; }
+        .terminal { background: black; color: #39ff14; padding: 15px; border-radius: 6px; margin-top: 20px; font-family: monospace; min-height: 40px; border-left: 4px solid var(--accent); }
 
-        .container { max-width: 850px; margin: 30px auto; padding: 0 15px; }
-        .section { display: none; }
-        .section.active { display: block; animation: fadeIn 0.3s ease-in; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Admin UI */
-        .admin-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 25px; }
-        input[type="text"] { width: 100%; padding: 12px; background: #010409; border: 1px solid var(--border); color: var(--primary); border-radius: 6px; margin-bottom: 15px; box-sizing: border-box; }
-        textarea { width: 100%; height: 250px; background: #010409; color: #79c0ff; border: 1px solid var(--border); border-radius: 6px; padding: 15px; font-family: 'Courier New', monospace; box-sizing: border-box; resize: vertical; }
-        .run-btn { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; font-size: 16px; }
-        
-        .terminal { background: black; color: var(--terminal-text); padding: 15px; border-radius: 6px; margin-top: 20px; font-family: monospace; font-size: 14px; border-left: 4px solid var(--accent); min-height: 60px; }
-
-        /* User UI - Code Box */
-        .code-card { background: #0d1117; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 25px; overflow: hidden; }
-        .code-header { background: #161b22; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-        .copy-btn { background: #21262d; border: 1px solid var(--border); color: var(--text); padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
-        .copy-btn:hover { background: #30363d; }
-        pre { margin: 0; padding: 20px; overflow-x: auto; color: #e6edf3; font-size: 14px; line-height: 1.6; }
+        .file-item { display: flex; justify-content: space-between; align-items: center; background: #0d1117; padding: 15px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; }
+        .download-btn { background: var(--primary); color: white; text-decoration: none; padding: 5px 15px; border-radius: 4px; font-size: 13px; }
     </style>
 </head>
 <body>
 
 <nav>
-    <button class="tab-btn active" onclick="showTab('admin')">Admin Panel</button>
-    <button class="tab-btn" onclick="showTab('user')">User View</button>
+    <button class="tab-btn active" onclick="showTab('admin')">Admin (Upload)</button>
+    <button class="tab-btn" onclick="showTab('user')">User (Files)</button>
 </nav>
 
 <div class="container">
-    
     <div id="admin" class="section active">
-        <div class="admin-panel">
-            <h2 style="margin-top:0">Upload New Code</h2>
-            <input type="text" id="titleInput" placeholder="কোডের নাম (Title)...">
-            <textarea id="codeInput" placeholder="// এখানে আপনার কোডিং পেস্ট করুন..."></textarea>
-            <button class="run-btn" onclick="processUpload()">RUN & UPLOAD</button>
-            <div id="terminal" class="terminal">> System ready. Waiting for input...</div>
-        </div>
+        <h2>Upload File to Cloud</h2>
+        <input type="file" id="fileSelector">
+        <button class="run-btn" onclick="uploadFile()">RUN UPLOAD SYSTEM</button>
+        <div id="terminal" class="terminal">> Waiting for file...</div>
     </div>
 
     <div id="user" class="section">
         <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="margin:0">Cloud Snippets</h2>
-            <button onclick="fetchData()" style="background:transparent; color:var(--primary); border:1px solid var(--primary); padding:5px 15px; border-radius:4px; cursor:pointer;">Refresh</button>
+            <h2 style="margin:0">Available Files</h2>
+            <button onclick="loadFiles()" style="background:none; color:var(--primary); border:1px solid var(--primary); padding:5px; cursor:pointer;">Refresh</button>
         </div>
-        <div id="codeDisplayArea">
-            <p style="text-align:center; color: #8b949e;">কোড লোড হচ্ছে...</p>
-        </div>
+        <div id="fileDisplayArea"></div>
     </div>
-
 </div>
 
 <script>
-    // Supabase Configuration
     const SB_URL = "https://soduyfwldglavqfbvbod.supabase.co";
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvZHV5ZndsZGdsYXZxZmJ2Ym9kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MzExNjQsImV4cCI6MjA5MTMwNzE2NH0.-5zO6e8J3KUPg4nulXaH_XPH1pyckdCAkb2VgfXusn0";
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    // Tab Logic
     function showTab(tabId) {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
         event.currentTarget.classList.add('active');
-        if(tabId === 'user') fetchData();
+        if(tabId === 'user') loadFiles();
     }
 
-    // Terminal Logic & Upload
-    async function processUpload() {
-        const title = document.getElementById('titleInput').value;
-        const code = document.getElementById('codeInput').value;
+    async function uploadFile() {
+        const fileInput = document.getElementById('fileSelector');
         const terminal = document.getElementById('terminal');
+        const file = fileInput.files[0];
 
-        if (!title || !code) {
-            terminal.innerHTML = "<span style='color:red'>> Error: টাইটেল এবং কোড দুটোই প্রয়োজন!</span>";
+        if (!file) {
+            terminal.innerHTML = "<span style='color:red'>> Error: কোনো ফাইল সিলেক্ট করা হয়নি!</span>";
             return;
         }
 
-        terminal.innerHTML = "> Connecting to server...";
-        
-        setTimeout(async () => {
-            terminal.innerHTML += "<br>> Processing code blocks...";
-            
-            const { error } = await _supabase
-                .from('all_codes')
-                .insert([{ title: title, code_content: code }]);
+        terminal.innerHTML = "> Connection established...";
+        const fileName = `${Date.now()}_${file.name}`;
 
-            if (error) {
-                terminal.innerHTML += `<br><span style='color:red'>> Failed: ${error.message}</span>`;
-            } else {
-                terminal.innerHTML += "<br>> Uploading to Supabase Cloud...";
-                setTimeout(() => {
-                    terminal.innerHTML += "<br>> <span style='color:#39ff14'>SUCCESSFULLY CODE UPLOADED!</span>";
-                    document.getElementById('titleInput').value = "";
-                    document.getElementById('codeInput').value = "";
-                }, 800);
-            }
-        }, 1000);
+        // 1. Upload to Storage
+        terminal.innerHTML += `<br>> Uploading ${file.name} to storage...`;
+        const { data: uploadData, error: uploadError } = await _supabase.storage
+            .from('files')
+            .upload(fileName, file);
+
+        if (uploadError) {
+            terminal.innerHTML += `<br><span style='color:red'>> Storage Error: ${uploadError.message}</span>`;
+            return;
+        }
+
+        // 2. Get Public URL
+        const { data: urlData } = _supabase.storage.from('files').getPublicUrl(fileName);
+        const publicUrl = urlData.publicUrl;
+
+        // 3. Save to Database
+        terminal.innerHTML += "<br>> Syncing file info with database...";
+        const { error: dbError } = await _supabase
+            .from('uploaded_files')
+            .insert([{ file_name: file.name, file_url: publicUrl }]);
+
+        if (dbError) {
+            terminal.innerHTML += `<br><span style='color:red'>> DB Error: ${dbError.message}</span>`;
+        } else {
+            terminal.innerHTML += "<br>> <span style='color:#39ff14'>FILE SUCCESSFULLY UPLOADED!</span>";
+            fileInput.value = "";
+        }
     }
 
-    // Fetch and Display Logic
-    async function fetchData() {
-        const area = document.getElementById('codeDisplayArea');
-        area.innerHTML = "Fetching data from cloud...";
+    async function loadFiles() {
+        const area = document.getElementById('fileDisplayArea');
+        area.innerHTML = "Loading files...";
 
-        const { data, error } = await _supabase
-            .from('all_codes')
-            .select('*')
-            .order('id', { ascending: false });
+        const { data, error } = await _supabase.from('uploaded_files').select('*').order('id', { ascending: false });
 
         if (error || !data) {
-            area.innerHTML = "No data found.";
+            area.innerHTML = "No files found.";
             return;
         }
 
         area.innerHTML = "";
-        data.forEach((item, index) => {
-            const card = document.createElement('div');
-            card.className = 'code-card';
-            card.innerHTML = `
-                <div class="code-header">
-                    <strong>${item.title}</strong>
-                    <button class="copy-btn" onclick="copyCode(this, 'code-${index}')">Copy Code</button>
-                </div>
-                <pre><code id="code-${index}">${escapeHTML(item.code_content)}</code></pre>
+        data.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'file-item';
+            div.innerHTML = `
+                <span>${item.file_name}</span>
+                <a href="${item.file_url}" target="_blank" class="download-btn">Download</a>
             `;
-            area.appendChild(card);
+            area.appendChild(div);
         });
-    }
-
-    // Copy Function
-    function copyCode(btn, id) {
-        const text = document.getElementById(id).innerText;
-        navigator.clipboard.writeText(text).then(() => {
-            btn.innerText = "Copied!";
-            setTimeout(() => btn.innerText = "Copy Code", 2000);
-        });
-    }
-
-    function escapeHTML(str) {
-        return str.replace(/[&<>"']/g, m => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-        }[m]));
     }
 </script>
 
